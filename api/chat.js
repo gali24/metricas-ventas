@@ -1,11 +1,6 @@
 // api/chat.js - Función serverless para Vercel
 const { Groq } = require('groq-sdk');
 
-// Configurar Groq con la API key de las variables de entorno
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
-});
-
 module.exports = async (req, res) => {
     // Configurar CORS para Vercel
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,30 +20,42 @@ module.exports = async (req, res) => {
         });
     }
 
-    const { 
-        message, 
-        model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', 
-        provider = process.env.PROVIDER || 'groq' 
-    } = req.body;
-
-    // Validar que el mensaje existe
-    if (!message) {
-        return res.status(400).json({ 
-            error: true, 
-            message: 'Mensaje es requerido.' 
-        });
-    }
-
-    // Verificar que la API key esté configurada
-    if (!process.env.GROQ_API_KEY) {
-        console.error("GROQ_API_KEY no está configurada en Vercel.");
-        return res.status(500).json({ 
-            error: true, 
-            message: 'API Key no configurada en el servidor.' 
-        });
-    }
-
     try {
+        // Parsear el body de la petición
+        let body;
+        if (typeof req.body === 'string') {
+            body = JSON.parse(req.body);
+        } else {
+            body = req.body;
+        }
+
+        const { 
+            message, 
+            model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
+        } = body;
+
+        // Validar que el mensaje existe
+        if (!message) {
+            return res.status(400).json({ 
+                error: true, 
+                message: 'Mensaje es requerido.' 
+            });
+        }
+
+        // Verificar que la API key esté configurada
+        if (!process.env.GROQ_API_KEY) {
+            console.error("GROQ_API_KEY no está configurada en Vercel.");
+            return res.status(500).json({ 
+                error: true, 
+                message: 'API Key no configurada en el servidor.' 
+            });
+        }
+
+        // Configurar Groq con la API key
+        const groq = new Groq({
+            apiKey: process.env.GROQ_API_KEY,
+        });
+
         // Llamar a Groq API
         const chatCompletion = await groq.chat.completions.create({
             messages: [
@@ -68,7 +75,7 @@ module.exports = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error al llamar a Groq API:', error);
+        console.error('Error en api/chat.js:', error);
         res.status(500).json({ 
             error: true, 
             message: 'Error al procesar la solicitud de chat.', 
