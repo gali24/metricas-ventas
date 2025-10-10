@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Métricas y Ventas en Redes Sociales</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root { --bg:#f4f4f4; --card:#fff; --text:#1f2937; --muted:#6b7280; --primary:#624bff; --primary-h:#4b38e5; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444; --shadow:0 10px 30px rgba(18,38,63,.08); }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; background:linear-gradient(180deg, #f7f7ff 0%, #f4f4f4 60%); color:var(--text); }
+    .container { max-width: 960px; margin: 32px auto; background: var(--card); padding: 26px; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    h1 { margin-top:0; letter-spacing:.2px; }
+    h2 { letter-spacing:.2px; }
+    form { margin: 16px 0 24px; display:grid; gap:12px; }
+    label { font-weight:600; font-size:13px; color:#374151; }
+    input, select, button { padding: 8px 10px; border:1px solid #e5e7eb; border-radius:10px; font-size:13px; }
+    input:focus, select:focus, button:focus { outline:none; box-shadow: 0 0 0 3px rgba(98,75,255,.15); border-color:#c7c9ff; }
+    button { background: var(--primary); color:#fff; cursor:pointer; border:none; border-radius:10px; font-weight:600; display:inline-flex; align-items:center; gap:6px; }
+    button i { font-size: 16px; line-height: 1; }
+    button:hover { background: var(--primary-h); }
+    button:disabled { background:#cfcfcf; cursor:not-allowed; }
+    .row { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+    .ai-box { border:1px solid #eaeaea; padding:12px; background:#f8f9fa; border-radius:8px; margin-top:10px; }
+    .fallback { background:#fff3cd; border:1px solid #ffeaa7; padding:12px; border-radius:8px; }
+    .error-box { background:#f8d7da; border:1px solid #f5c6cb; padding:12px; border-radius:8px; color:#721c24; }
+    .muted { color: var(--muted); font-size: 13px; }
+    #metricsResults, #agentResults, #trendsResults, #testResults { margin-top:14px; }
+    .chat { border:1px solid #eaeaea; border-radius:10px; padding:12px; background:#fdfdfd; }
+    .chat-log { max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:6px; background:#fafafa; border-radius:8px; border:1px solid #eee; }
+    .msg { max-width:80%; padding:10px 12px; border-radius:14px; line-height:1.35; }
+    .msg.user { align-self:flex-end; background:#e7f1ff; border:1px solid #d6e8ff; }
+    .msg.bot  { align-self:flex-start; background:#f3f3f3; border:1px solid #e6e6e6; }
+    .chat-row { margin-top:10px; display:grid; grid-template-columns: 1fr 120px; gap:8px; }
+    /* ==== HERO mejorado con imagen ==== */
+    .hero { position: relative; width: 100%; height: 220px; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); background: radial-gradient(1200px 300px at 0% 0%, rgba(98,75,255,.12), transparent), linear-gradient(135deg, #eef0ff 0%, #f7f7ff 100%); }
+    .hero img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter: saturate(1.05) contrast(1.05); }
+    .hero::after { content:''; position:absolute; inset:0; background: linear-gradient(180deg, rgba(12,14,30,.10) 0%, rgba(12,14,30,.35) 70%, rgba(12,14,30,.55) 100%); }
+    .hero-content { position:relative; z-index:1; display:flex; height:100%; align-items:flex-end; padding:18px; color:#fff; }
+    .hero-title { font-size:26px; font-weight:800; letter-spacing:.2px; margin:0; text-shadow:0 2px 10px rgba(0,0,0,.25); }
+    .hero-sub { margin:6px 0 0; font-size:14px; opacity:.95; }
+    .hero-toolbar { position:absolute; top:12px; right:12px; display:flex; gap:8px; z-index:2; }
+    .ghost { background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35); color:#fff; backdrop-filter: blur(6px); }
+    .ghost:hover { background:rgba(255,255,255,.3); }
+    .btn-ghost { background:transparent; color:var(--primary); border:1px solid #e5e7eb; }
+    .btn-ghost:hover { background:rgba(98,75,255,.06); border-color:#dcdffd; }
+    /* ==== KPI Cards y secciones ==== */
+    .section { margin-top:22px; padding:20px; background:#fff; border:1px solid #ececec; border-radius:14px; box-shadow: var(--shadow); }
+    .section h2 { margin:6px 0 2px; font-size:18px; }
+    .subtitle { margin:0 0 12px; color:#6b7280; font-size:13px; }
+    .kpis-head { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:10px; flex-wrap:wrap; }
+    .kpis-head .filters { display:flex; gap:8px; }
+    .kpis { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:12px; }
+    .kpi-and-tips { display:grid; grid-template-columns: 1fr; gap:14px; }
+    @media (min-width: 900px) { .kpi-and-tips { grid-template-columns: 2fr 1fr; } }
+    .tips { background:#fbfbff; border:1px solid #eff0f6; border-radius:12px; padding:12px; }
+    .tips h3 { margin:0 0 8px; font-size:16px; }
+    .tips ul { margin:0; padding-left:18px; }
+    .tips li { margin:6px 0; font-size:13px; color:#374151; }
+    .kpi-card { background:linear-gradient(180deg,#ffffff 0%, #fbfbff 100%); border:1px solid #eff0f6; border-radius:12px; padding:14px; display:flex; align-items:center; gap:12px; transition: box-shadow .2s, border-color .2s, transform .1s; }
+    .kpi-card.weak { border-color:#fca5a5; box-shadow: 0 8px 20px rgba(239,68,68,.15); transform: translateY(-1px); }
+    .kpi-icon { width:36px; height:36px; border-radius:10px; display:grid; place-items:center; color:#fff; font-size:18px; box-shadow: var(--shadow); }
+    .kpi-title { font-size:12px; color:#6b7280; margin:0; }
+    .kpi-value { font-size:22px; font-weight:800; margin:2px 0 0; }
+    .i-views { background:#0ea5e9; }
+    .i-likes { background:#f97316; }
+    .i-follows { background:#10b981; }
+    .i-eng { background:#ef4444; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#4f46e5; font-weight:700; font-size:11px; border:1px solid #e0e7ff; }
+    /* Sparklines */
+    .kpi-body { display:flex; flex-direction:column; }
+    .kpi-spark { margin-top:6px; width:100%; height:28px; }
+    .spark-views { stroke:#0ea5e9; }
+    .spark-likes { stroke:#f97316; }
+    .spark-follows { stroke:#10b981; }
+    .spark-eng { stroke:#ef4444; }
+    /* Comparativa */
+    .compare-controls { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:8px; margin:10px 0 6px; }
+    .compare-chart { width:100%; height:220px; border:1px dashed #e5e7eb; border-radius:10px; background:#fff; }
+    .cmp-a { stroke:#624bff; }
+    .cmp-b { stroke:#10b981; }
+    /* Duo layout */
+    .duo-grid { display:grid; grid-template-columns: 1fr; gap:14px; }
+    @media (min-width: 900px) { .duo-grid { grid-template-columns: 1fr 1fr; } }
+    .section.accent { position:relative; border-left:4px solid var(--primary); }
+    .section-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; margin:-8px -8px 12px; background:linear-gradient(180deg,#f4f4ff 0%, #ffffff 100%); border:1px solid #eef0ff; border-radius:10px; }
+    .icon-badge { width:28px; height:28px; border-radius:8px; display:grid; place-items:center; background:rgba(98,75,255,.12); color:#4b38e5; font-size:14px; }
+    .status-badge { display:inline-block; padding:4px 10px; border-radius:999px; font-weight:700; font-size:11px; border:1px solid transparent; }
+    .status-ok { background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+    .status-warn { background:#fffbeb; color:#b45309; border-color:#fde68a; }
+    .status-err { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+    /* Deltas */
+    .kpi-delta { margin-top:4px; font-size:12px; }
+    .delta { font-weight:700; }
+    .delta.up { color:#16a34a; }
+    .delta.down { color:#ef4444; }
+    .delta.flat { color:#6b7280; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <img id="heroImg" alt="Imagen de cabecera" style="display:none;"/>
+      <div class="hero-toolbar">
+        <input id="heroUpload" type="file" accept="image/*" style="display:none;"/>
+        <button id="heroUploadBtn" class="ghost" type="button"><i class="bi bi-image"></i> Cambiar imagen</button>
+        <button id="heroClearBtn" class="ghost" type="button"><i class="bi bi-eraser"></i> Quitar</button>
+        <span id="apiStatusBadge" class="status-badge status-warn" style="margin-left:6px;">API: comprobando…</span>
+      </div>
+      <div class="hero-content">
+        <div>
+          <h1 class="hero-title">Dashboard de Métricas Sociales</h1>
+          <p class="hero-sub">Analiza y optimiza tu presencia con IA · TikTok · Instagram · Facebook</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="section">
+      <h2>KPIs Principales <span class="badge">Tiempo real</span></h2>
+      <p class="subtitle">Se actualizan cuando calculas métricas.</p>
+      <div class="kpis-head">
+        <div class="filters">
+          <select id="kpiPlatform">
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+          </select>
+          <select id="kpiPeriod">
+            <option value="day">Día</option>
+            <option value="week" selected>Semana</option>
+            <option value="month">Mes</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <button id="kpiExportCsv" type="button" class="ghost" style="color:#111;"><i class="bi bi-filetype-csv"></i> Exportar CSV</button>
+          <button id="kpiClearHist" type="button" class="ghost" style="color:#111;"><i class="bi bi-trash3"></i> Borrar histórico</button>
+          <button id="kpiClearAll" type="button" class="ghost" style="color:#111;"><i class="bi bi-recycle"></i> Borrar todo</button>
+          <button id="kpiReset" type="button" class="ghost" style="color:#111;"><i class="bi bi-arrow-repeat"></i> Reiniciar KPIs</button>
+        </div>
+      </div>
+      <div class="kpi-and-tips">
+      <div class="kpis">
+        <div class="kpi-card"><div class="kpi-icon i-views">👁️</div><div class="kpi-body"><p class="kpi-title">Vistas Totales</p><p id="kpiViews" class="kpi-value">0</p><div id="deltaViews" class="kpi-delta"><span class="delta flat">—</span></div><svg id="sparkViews" class="kpi-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline class="spark-views" fill="none" stroke-width="2" points=""/></svg></div></div>
+        <div class="kpi-card"><div class="kpi-icon i-likes">❤️</div><div class="kpi-body"><p class="kpi-title">Likes Totales</p><p id="kpiLikes" class="kpi-value">0</p><div id="deltaLikes" class="kpi-delta"><span class="delta flat">—</span></div><svg id="sparkLikes" class="kpi-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline class="spark-likes" fill="none" stroke-width="2" points=""/></svg></div></div>
+        <div class="kpi-card"><div class="kpi-icon i-follows">👥</div><div class="kpi-body"><p class="kpi-title">Seguidores</p><p id="kpiFollowers" class="kpi-value">0</p><div id="deltaFollows" class="kpi-delta"><span class="delta flat">—</span></div><svg id="sparkFollows" class="kpi-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline class="spark-follows" fill="none" stroke-width="2" points=""/></svg></div></div>
+        <div class="kpi-card"><div class="kpi-icon i-eng">📈</div><div class="kpi-body"><p class="kpi-title">Engagement Rate</p><p id="kpiEng" class="kpi-value">0%</p><div id="deltaEng" class="kpi-delta"><span class="delta flat">—</span></div><svg id="sparkEng" class="kpi-spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline class="spark-eng" fill="none" stroke-width="2" points=""/></svg></div></div>
+      </div>
+      <div class="tips">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <h3>Tips rápidos</h3>
+          <div style="display:flex; gap:8px;">
+            <button id="tipsAiBtn" type="button" class="ghost" style="color:#111;"><i class="bi bi-stars"></i> Ampliar con IA (7)</button>
+            <button id="tipsAiReplaceBtn" type="button" class="ghost" style="color:#111;"><i class="bi bi-robot"></i> Reemplazar tips con IA (7)</button>
+          </div>
+        </div>
+        <ul id="tipsList">
+          <li>Calcula tus métricas para ver consejos personalizados.</li>
+        </ul>
+      </div>
+      </div>
+    </div>
+
+    <!-- 1) Calculadora de Métricas + 2) Control en layout de dos columnas -->
+    <div class="duo-grid">
+    <div class="section accent">
+    <div class="section-head"><div style="display:flex; align-items:center; gap:10px;"><div class="icon-badge">🧮</div><div><h2 style="margin:0;">1. Calculadora de Métricas</h2><p class="subtitle" style="margin:2px 0 0;">Ingresa datos actuales y recibe recomendaciones personalizadas de IA.</p></div></div><span id="statusCalc" class="status-badge status-warn">Sin calcular</span></div>
+    <form id="metricsForm">
+      <div class="row">
+        <div>
+          <label>Plataforma</label>
+          <select id="platform">
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+          </select>
+        </div>
+        <div>
+          <label>Vistas</label>
+          <input type="number" id="views" placeholder="Ej: 10000" required />
+        </div>
+        <div>
+          <label>Likes/Reacciones</label>
+          <input type="number" id="likes" placeholder="Ej: 500" required />
+        </div>
+        <div>
+          <label>Seguidores/Alcance</label>
+          <input type="number" id="followers" placeholder="Ej: 1000" required />
+        </div>
+      </div>
+      <div>
+        <label>Producto/Servicio a Vender</label>
+        <input type="text" id="product" placeholder="Ej: Ropa deportiva" required />
+      </div>
+      <button type="submit" id="metricsBtn" class="btn-ghost"><i class="bi bi-calculator"></i> Calcular Métricas</button>
+    </form>
+    <div id="metricsResults"></div>
+    </div>
+
+    <!-- 2) Agente IA -->
+    <div class="section accent">
+    <div class="section-head"><div style="display:flex; align-items:center; gap:10px;"><div class="icon-badge">🧠</div><div><h2 style="margin:0;">2. Control de Vistas, Ideas de Venta y Presupuesto</h2><p class="subtitle" style="margin:2px 0 0;">Analiza evolución semanal y obtén un reporte con acciones.</p></div></div><span id="statusAgent" class="status-badge status-warn">Pendiente</span></div>
+    <form id="agentForm">
+      <div>
+        <label>Objetivo de Venta</label>
+        <input type="text" id="goal" placeholder="Ej: Vender cursos online" required/>
+      </div>
+      <div>
+        <label>Vistas Semanales (Ej: 1000,1200,800)</label>
+        <input type="text" id="weeklyViews" placeholder="1000,1200,800,1500" required/>
+      </div>
+      <button type="submit" id="agentBtn" class="btn-ghost"><i class="bi bi-lightning-charge"></i> Ejecutar Agente</button>
+    </form>
+    <div id="agentResults"></div>
+    </div>
+    </div>
+
+    <!-- 3) Tendencias -->
+    <div class="section accent">
+      <div class="section-head"><div style="display:flex; align-items:center; gap:10px;"><div class="icon-badge">🔥</div><div><h2 style="margin:0;">3. Tendencias Actuales (IA)</h2><p class="subtitle" style="margin:2px 0 0;">Ideas prácticas y métricas clave para hoy.</p></div></div><span id="statusTrends" class="status-badge status-warn">Listo</span></div>
+      <div class="compare-controls">
+        <select id="cmpPlatA">
+          <option value="tiktok">TikTok</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+        </select>
+        <select id="cmpPlatB">
+          <option value="instagram">Instagram</option>
+          <option value="tiktok">TikTok</option>
+          <option value="facebook">Facebook</option>
+        </select>
+        <select id="cmpMetric">
+          <option value="views">Vistas</option>
+          <option value="likes">Likes</option>
+          <option value="followers">Seguidores</option>
+          <option value="engagementRate">Engagement %</option>
+        </select>
+        <button id="cmpRender" type="button">Comparar</button>
+      </div>
+      <svg id="cmpChart" class="compare-chart" viewBox="0 0 100 60" preserveAspectRatio="none">
+        <polyline id="cmpLineA" class="cmp-a" fill="none" stroke-width="1.6" points=""/>
+        <polyline id="cmpLineB" class="cmp-b" fill="none" stroke-width="1.6" points=""/>
+      </svg>
+    <div class="row">
+        <button type="button" id="trendsBtn" class="btn-ghost"><i class="bi bi-graph-up"></i> Obtener Tendencias</button>
+    </div>
+    <div id="trendsResults"></div>
+      <div id="testResults" style="display:none;"></div>
+  </div>
+<!-- 4) Chat con el Agente -->
+    <div class="section accent">
+      <div class="section-head"><div style="display:flex; align-items:center; gap:10px;"><div class="icon-badge">💬</div><div><h2 style="margin:0;">4. Hablar con el Agente</h2><p class="subtitle" style="margin:2px 0 0;">Consulta en lenguaje natural y recibe respuestas accionables.</p></div></div></div>
+<div class="chat">
+  <div id="chatLog" class="chat-log"></div>
+  <div class="chat-row">
+    <input id="chatInput" type="text" placeholder="Escribe aquí y presiona Enter…" />
+          <button id="chatSend" type="button" class="btn-ghost"><i class="bi bi-send"></i> Enviar</button>
+  </div>
+  <div class="muted" style="margin-top:6px;">
+    Consejito: el chat recuerda el contexto hasta que lo reinicies.
+          <button id="chatReset" type="button" style="margin-left:8px;"><i class="bi bi-arrow-counterclockwise"></i> Reiniciar chat</button>
+        </div>
+      </div>
+  </div>
+</div>
+
+  <script>
+    const MODEL = 'llama-3.3-70b-versatile';
+    const PROXY_URL = 'http://localhost:3000/api/chat';
+    const $ = (id) => document.getElementById(id);
+    //const MODEL = 'llama-3.3-70b-versatile';
+    //const PROXY_URL = 'http://localhost:3000/api/chat'
+    //? 'http://localhost:3000/api/chat'  // cuando usas tu server local
+    //: '/api/chat';
+    
+
+    function getTrafficRecommendation(platform, product, views) {
+      if (platform === 'tiktok' && views > 5000) return `TikTok tiene alto tráfico para productos virales como ${product}. Enfócate en videos cortos.`;
+      if (platform === 'instagram') return `Instagram es ideal para visuales; usa Stories para ${product}.`;
+      return `Facebook para audiencias amplias; anuncios pagados recomendados para ${product}.`;
+    }
+
+    // === Gestión de imagen del HERO ===
+    const HERO_STORAGE_KEY = 'msocial.hero.image';
+    const DEFAULT_HERO_URL = 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?q=80&w=1600&auto=format&fit=crop';
+    function loadHeroImageFromStorage() {
+      try {
+        const dataUrl = localStorage.getItem(HERO_STORAGE_KEY);
+        const img = $('heroImg');
+        if (dataUrl) {
+          img.src = dataUrl;
+          img.style.display = 'block';
+        } else {
+          img.src = DEFAULT_HERO_URL;
+          img.style.display = 'block';
+        }
+      } catch {}
+    }
+    function handleHeroUpload(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try { localStorage.setItem(HERO_STORAGE_KEY, reader.result); } catch {}
+        loadHeroImageFromStorage();
+      };
+      reader.readAsDataURL(file);
+    }
+    function clearHeroImage() {
+      try { localStorage.removeItem(HERO_STORAGE_KEY); } catch {}
+      loadHeroImageFromStorage();
+    }
+
+    // === Serie histórica KPIs ===
+    function pushKpiHistory(platform, period, data) {
+      const key = `msocial.kpi.hist.${platform}.${period}`;
+      let arr = [];
+      try { arr = JSON.parse(localStorage.getItem(key) || '[]'); } catch { arr = []; }
+      arr.push({ t: Date.now(), ...data });
+      // limitar a 30 puntos para evitar crecer indefinidamente
+      if (arr.length > 30) arr = arr.slice(arr.length - 30);
+      try { localStorage.setItem(key, JSON.stringify(arr)); } catch {}
+      return arr;
+    }
+    function getKpiHistory(platform, period) {
+      const key = `msocial.kpi.hist.${platform}.${period}`;
+      try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+    }
+    function exportKpiHistoryCsv(platform, period) {
+      const hist = getKpiHistory(platform, period);
+      const rows = [['timestamp','fecha_iso','views','likes','followers','engagementRate']];
+      for (const h of hist) {
+        const d = new Date(h.t||Date.now());
+        rows.push([h.t||'', d.toISOString(), h.views||0, h.likes||0, h.followers||0, h.engagementRate||0]);
+      }
+      const csv = rows.map(r => r.map(v => `${v}`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kpis_${platform}_${period}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    function clearKpiHistory(platform, period) {
+      try { localStorage.removeItem(`msocial.kpi.hist.${platform}.${period}`); } catch {}
+    }
+    function clearAllKpiHistory() {
+      try {
+        const keys = Object.keys(localStorage);
+        for (const k of keys) {
+          if (k.startsWith('msocial.kpi.hist.')) localStorage.removeItem(k);
+        }
+      } catch {}
+    }
+    function renderSparkline(svgId, values, yScaleFactor = 1) {
+      const svg = document.getElementById(svgId);
+      if (!svg) return;
+      const poly = svg.querySelector('polyline');
+      if (!poly) return;
+      if (!values || values.length === 0) { poly.setAttribute('points',''); return; }
+      const w = 100, h = 28;
+      const n = values.length;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const span = max - min || 1; // evita div 0
+      const pts = values.map((v,i) => {
+        const x = (i/(n-1)) * w;
+        const y = h - ((v - min)/span) * h; // 0 arriba
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      }).join(' ');
+      poly.setAttribute('points', pts);
+    }
+    function setDelta(elId, prev, curr, isPercent=false) {
+      const el = $(elId); if (!el) return;
+      const delta = curr - prev;
+      const pct = prev === 0 ? 0 : (delta/prev)*100;
+      let cls = 'flat', sym = '—', text = '';
+      if (delta > 0.0001) { cls = 'up'; sym = '▲'; }
+      else if (delta < -0.0001) { cls = 'down'; sym = '▼'; }
+      text = isPercent ? `${sym} ${(pct).toFixed(1)}%` : `${sym} ${(pct).toFixed(1)}%`;
+      el.innerHTML = `<span class="delta ${cls}">${text}</span>`;
+      el.title = `Previo: ${isPercent?prev.toFixed(2)+'%':prev} → Actual: ${isPercent?curr.toFixed(2)+'%':curr}`;
+    }
+
+    // === Comparativa ===
+    function renderCompare(metric, platA, platB, period) {
+      const histA = getKpiHistory(platA, period);
+      const histB = getKpiHistory(platB, period);
+      const valsA = histA.map(h => Number(h[metric])||0);
+      const valsB = histB.map(h => Number(h[metric])||0);
+      const n = Math.max(valsA.length, valsB.length);
+      const w = 100, h = 60;
+      const min = Math.min(
+        valsA.length?Math.min(...valsA):0,
+        valsB.length?Math.min(...valsB):0
+      );
+      const max = Math.max(
+        valsA.length?Math.max(...valsA):1,
+        valsB.length?Math.max(...valsB):1
+      );
+      const span = (max - min) || 1;
+      function toPoints(arr) {
+        if (!arr.length) return '';
+        const m = arr.length;
+        return arr.map((v,i)=>{
+          const x = (i/Math.max(m-1,1))*w;
+          const y = h - ((v - min)/span)*h;
+          return `${x.toFixed(2)},${y.toFixed(2)}`;
+        }).join(' ');
+      }
+      document.getElementById('cmpLineA').setAttribute('points', toPoints(valsA));
+      document.getElementById('cmpLineB').setAttribute('points', toPoints(valsB));
+    }
+
+    function calculateMetrics(e) {
+      e.preventDefault();
+      const platform = $('platform').value;
+      const views = parseInt($('views').value || '0', 10);
+      const likes = parseInt($('likes').value || '0', 10);
+      const followers = parseInt($('followers').value || '0', 10);
+      const product = $('product').value.trim();
+
+      if (views <= 0) {
+        $('metricsResults').innerHTML = `<div class="error-box">Vistas debe ser mayor a 0.</div>`;
+        return;
+      }
+
+      const engagementRate = ((likes / Math.max(views,1)) * 100).toFixed(2);
+      const safeFollowers = followers > 0 ? followers : 1;
+      const potentialReach = (views / safeFollowers) * 100;
+      const trafficRecommendation = getTrafficRecommendation(platform, product, views);
+
+      // Actualiza KPI cards
+      $('kpiViews').textContent = views.toLocaleString();
+      $('kpiLikes').textContent = likes.toLocaleString();
+      $('kpiFollowers').textContent = followers.toLocaleString();
+      $('kpiEng').textContent = `${engagementRate}%`;
+
+      // Persistir por plataforma/periodo
+      const kPlat = $('kpiPlatform')?.value || platform;
+      const kPer = $('kpiPeriod')?.value || 'week';
+      const key = `msocial.kpi.${kPlat}.${kPer}`;
+      try {
+        localStorage.setItem(key, JSON.stringify({ views, likes, followers, engagementRate }));
+      } catch {}
+
+      // Empujar a histórico y renderizar sparklines
+      const hist = pushKpiHistory(kPlat, kPer, { views, likes, followers, engagementRate: parseFloat(engagementRate) });
+      const viewsArr = hist.map(h => Number(h.views)||0);
+      const likesArr = hist.map(h => Number(h.likes)||0);
+      const followsArr = hist.map(h => Number(h.followers)||0);
+      const engArr = hist.map(h => Number(h.engagementRate)||0);
+      renderSparkline('sparkViews', viewsArr);
+      renderSparkline('sparkLikes', likesArr);
+      renderSparkline('sparkFollows', followsArr);
+      renderSparkline('sparkEng', engArr);
+      // Deltas vs. penúltimo
+      const pv = viewsArr.length>1 ? viewsArr[viewsArr.length-2] : viewsArr[0]||0;
+      const pl = likesArr.length>1 ? likesArr[likesArr.length-2] : likesArr[0]||0;
+      const pf = followsArr.length>1 ? followsArr[followsArr.length-2] : followsArr[0]||0;
+      const pe = engArr.length>1 ? engArr[engArr.length-2] : engArr[0]||0;
+      setDelta('deltaViews', pv, views);
+      setDelta('deltaLikes', pl, likes);
+      setDelta('deltaFollows', pf, followers);
+      setDelta('deltaEng', pe, parseFloat(engagementRate), true);
+
+      // Detecta métrica débil
+      const weakness = (function(){
+        if (views <= 0) return 'vistas';
+        const er = parseFloat(engagementRate);
+        if (er < 2) return 'engagement';
+        if (likes < views*0.03) return 'likes';
+        if (followers < 500) return 'seguidores';
+        return 'general';
+      })();
+
+      // Marca KPI débil
+      for (const el of document.querySelectorAll('.kpi-card')) el.classList.remove('weak');
+      const weakMap = { vistas:0, likes:1, seguidores:2, engagement:3 };
+      const idx = weakMap[weakness];
+      if (idx !== undefined) {
+        const card = document.querySelectorAll('.kpi-card')[idx];
+        if (card) card.classList.add('weak');
+      }
+
+      $('metricsResults').innerHTML = `
+        <h3>Resultados para ${platform} (${product})</h3>
+        <p><strong>Tasa de Engagement:</strong> ${engagementRate}%</p>
+        <p><strong>Alcance Potencial:</strong> ${potentialReach.toFixed(2)}% de seguidores</p>
+        <p><strong>Recomendación de Tráfico:</strong> ${trafficRecommendation}</p>
+        <p><strong>Captación de Clientes:</strong> Con ${views.toLocaleString()} vistas, podrías captar ~${Math.round(views * 0.05).toLocaleString()} leads (estimado 5% conversión).</p>
+      `;
+
+      // Solicita consejo a la IA sobre la métrica débil
+      const tipPrompt = `Eres un experto en growth para ${platform}. Producto: ${product}.
+Datos: vistas=${views}, likes=${likes}, seguidores=${followers}, engagement=${engagementRate}%.
+Detecta que la métrica más débil es: ${weakness}.
+Da 5 recomendaciones accionables, concretas y de bajo costo para mejorar esa métrica en 7 días. Responde en viñetas cortas.`;
+      callDeepSeek(tipPrompt).then(resp => {
+        if (resp) {
+          const box = document.createElement('div');
+          box.className = 'ai-box';
+          box.innerHTML = `<strong>Recomendaciones de IA para mejorar ${weakness}:</strong><br>${resp.replace(/\n/g,'<br>')}`;
+          $('metricsResults').appendChild(box);
+        }
+      });
+
+      // Actualizar tips rápidos locales
+      updateQuickTips({ v: views, l: likes, f: followers, er: parseFloat(engagementRate) });
+
+      // Actualizar badge de estado de calculadora
+      const s = $('statusCalc');
+      const erV = parseFloat(engagementRate);
+      if (s) {
+        s.className = 'status-badge ' + (erV >= 3 ? 'status-ok' : erV >= 1.5 ? 'status-warn' : 'status-err');
+        s.textContent = erV >= 3 ? 'Estable' : erV >= 1.5 ? 'Atención' : 'En riesgo';
+        s.title = erV >= 3 ? 'Criterio: Engagement ≥ 3%' : erV >= 1.5 ? 'Criterio: 1.5% ≤ Engagement < 3%' : 'Criterio: Engagement < 1.5%';
+      }
+    }
+
+    function updateQuickTips(data) {
+      const ul = $('tipsList');
+      if (!ul) return;
+      ul.innerHTML = '';
+      const plat = $('kpiPlatform')?.value || 'tiktok';
+      const per = $('kpiPeriod')?.value || 'week';
+      const tips = [];
+      if (!data) {
+        tips.push('Calcula para ver consejos personalizados.');
+      } else {
+        const { v, l, f, er } = data;
+        if (v < 1000) tips.push('Incrementa publicaciones 3-5/semana y usa ganchos 0–3s.');
+        if (er < 2) tips.push('Prueba formatos UGC y preguntas al inicio para elevar engagement.');
+        if (l < v*0.03) tips.push('Cierra con CTA explícito a comentar/guardar/compartir.');
+        if (f < 500) tips.push('Hace colaboraciones con microcreadores para ganar seguidores.');
+        tips.push(`Optimiza horarios según analytics de ${plat}.`);
+        if (per === 'week') tips.push('Haz 1 live semanal con oferta limitada.');
+      }
+      for (const t of tips) {
+        const li = document.createElement('li');
+        li.textContent = t;
+        ul.appendChild(li);
+      }
+    }
+
+    async function expandTipsWithAI(replace = false) {
+      const plat = $('kpiPlatform')?.value || 'tiktok';
+      const per = $('kpiPeriod')?.value || 'week';
+      const v = parseInt(($('kpiViews')?.textContent || '0').replace(/\D/g,''),10) || 0;
+      const l = parseInt(($('kpiLikes')?.textContent || '0').replace(/\D/g,''),10) || 0;
+      const f = parseInt(($('kpiFollowers')?.textContent || '0').replace(/\D/g,''),10) || 0;
+      const erStr = ($('kpiEng')?.textContent || '0').replace('%','');
+      const er = parseFloat(erStr) || 0;
+      const btn = replace ? $('tipsAiReplaceBtn') : $('tipsAiBtn');
+      if (btn) { btn.disabled = true; btn.textContent = replace ? 'Reemplazando…' : 'Generando…'; }
+      const prompt = `Genera exactamente 7 sugerencias accionables, en bullets cortos, para mejorar resultados en ${plat}. Periodo: ${per}. KPIs: vistas=${v}, likes=${l}, seguidores=${f}, engagement=${er}%. Devuelve solo la lista sin texto adicional.`;
+      const resp = await callDeepSeek(prompt);
+      if (btn) { btn.disabled = false; btn.textContent = replace ? 'Reemplazar tips con IA (7)' : 'Ampliar con IA (7)'; }
+      if (!resp) return;
+      const ul = $('tipsList');
+      if (!ul) return;
+      // Parse: separar por líneas y limpiar viñetas posibles
+      const lines = resp.split(/\n+/).map(s => s.replace(/^[-*\d\.\)\s]+/,'').trim()).filter(Boolean);
+      if (replace) ul.innerHTML = '';
+      for (const line of lines.slice(0,7)) {
+        const li = document.createElement('li');
+        li.textContent = line;
+        ul.appendChild(li);
+      }
+    }
+
+    // === KPIs guardados: carga, reset y cambio de selectores ===
+    function loadStoredKpis() {
+      const plat = $('kpiPlatform')?.value || 'tiktok';
+      const per = $('kpiPeriod')?.value || 'week';
+      const key = `msocial.kpi.${plat}.${per}`;
+      let data = null;
+      try { data = JSON.parse(localStorage.getItem(key) || 'null'); } catch {}
+      if (data) {
+        const v = parseInt(data.views||0,10), l = parseInt(data.likes||0,10), f = parseInt(data.followers||0,10);
+        const er = parseFloat(data.engagementRate||0).toFixed(2);
+        $('kpiViews').textContent = v.toLocaleString();
+        $('kpiLikes').textContent = l.toLocaleString();
+        $('kpiFollowers').textContent = f.toLocaleString();
+        $('kpiEng').textContent = `${er}%`;
+        // Sparklines desde histórico
+        const hist = getKpiHistory(plat, per);
+        renderSparkline('sparkViews', hist.map(h=>Number(h.views)||0));
+        renderSparkline('sparkLikes', hist.map(h=>Number(h.likes)||0));
+        renderSparkline('sparkFollows', hist.map(h=>Number(h.followers)||0));
+        renderSparkline('sparkEng', hist.map(h=>Number(h.engagementRate)||0));
+        // Deltas
+        const vArr = hist.map(h=>Number(h.views)||0);
+        const lArr = hist.map(h=>Number(h.likes)||0);
+        const fArr = hist.map(h=>Number(h.followers)||0);
+        const eArr = hist.map(h=>Number(h.engagementRate)||0);
+        const pv = vArr.length>1 ? vArr[vArr.length-2] : vArr[0]||0;
+        const pl = lArr.length>1 ? lArr[lArr.length-2] : lArr[0]||0;
+        const pf = fArr.length>1 ? fArr[fArr.length-2] : fArr[0]||0;
+        const pe = eArr.length>1 ? eArr[eArr.length-2] : eArr[0]||0;
+        setDelta('deltaViews', pv, v);
+        setDelta('deltaLikes', pl, l);
+        setDelta('deltaFollows', pf, f);
+        setDelta('deltaEng', pe, parseFloat(er), true);
+        // recalcular métrica débil
+        for (const el of document.querySelectorAll('.kpi-card')) el.classList.remove('weak');
+        let weak = 'general';
+        if (v <= 0) weak = 'vistas';
+        else if (er < 2) weak = 'engagement';
+        else if (l < v*0.03) weak = 'likes';
+        else if (f < 500) weak = 'seguidores';
+        const weakMap = { vistas:0, likes:1, seguidores:2, engagement:3 };
+        const idx = weakMap[weak];
+        if (idx !== undefined) {
+          const card = document.querySelectorAll('.kpi-card')[idx];
+          if (card) card.classList.add('weak');
+        }
+        // actualizar tips basados en valores
+        updateQuickTips({ v, l, f, er: parseFloat(er) });
+        // actualizar badge de calculadora
+        const s = $('statusCalc');
+        if (s) {
+          const erV = parseFloat(er);
+          s.className = 'status-badge ' + (erV >= 3 ? 'status-ok' : erV >= 1.5 ? 'status-warn' : 'status-err');
+          s.textContent = erV >= 3 ? 'Estable' : erV >= 1.5 ? 'Atención' : 'En riesgo';
+          s.title = erV >= 3 ? 'Criterio: Engagement ≥ 3%' : erV >= 1.5 ? 'Criterio: 1.5% ≤ Engagement < 3%' : 'Criterio: Engagement < 1.5%';
+        }
+      } else {
+        $('kpiViews').textContent = '0';
+        $('kpiLikes').textContent = '0';
+        $('kpiFollowers').textContent = '0';
+        $('kpiEng').textContent = '0%';
+        renderSparkline('sparkViews', []);
+        renderSparkline('sparkLikes', []);
+        renderSparkline('sparkFollows', []);
+        renderSparkline('sparkEng', []);
+        for (const el of document.querySelectorAll('.kpi-card')) el.classList.remove('weak');
+        updateQuickTips(null);
+        const s = $('statusCalc');
+        if (s) { s.className = 'status-badge status-warn'; s.textContent = 'Sin calcular'; s.title = 'Criterio pendiente: calcular engagement'; }
+      }
+    }
+
+    async function callDeepSeek(prompt, sectionId = null) {
+      try {
+        const response = await fetch(PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: MODEL,
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 1000,
+            temperature: 0.7,
+            stream: false
+          })
+        });
+
+        const responseText = await response.text();
+        if (!response.ok) throw new Error(`Error API: ${response.status} - ${response.statusText} | ${responseText}`);
+
+        const data = JSON.parse(responseText);
+        const content = data?.choices?.[0]?.message?.content;
+        if (!content) throw new Error('Respuesta inválida: falta choices[0].message.content');
+        return content;
+      } catch (error) {
+        console.error('❌ Error en callDeepSeek:', error);
+        if (sectionId) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'error-box';
+          errorDiv.innerHTML = `<strong>Error detallado:</strong> ${error.message}<br><em>Revisa consola (F12).</em>`;
+          $(sectionId).appendChild(errorDiv);
+        }
+        return null;
+      }
+    }
+
+    async function testAPI() {
+      const badge = $('apiStatusBadge');
+      if (badge) { badge.className = 'status-badge status-warn'; badge.textContent = 'API: comprobando…'; badge.title = 'Verificando conectividad con el proxy'; }
+      const prompt = 'Responde exactamente: Test OK';
+      console.log('🔍 TestAPI: Iniciando prueba con prompt:', prompt);
+      const result = await callDeepSeek(prompt, 'testResults');
+      console.log('🔍 TestAPI: Resultado recibido:', result);
+      if (result && result.trim() === 'Test OK') {
+        console.log('✅ TestAPI: API funcionando correctamente');
+        if (badge) { badge.className = 'status-badge status-ok'; badge.textContent = 'API: OK'; badge.title = 'Proxy y modelo respondiendo'; }
+        // habilitar Tendencias
+        const tbtn = $('trendsBtn');
+        if (tbtn) { tbtn.disabled = false; tbtn.title = ''; }
+        const st = $('statusTrends');
+        if (st) { st.className = 'status-badge status-ok'; st.textContent = 'Listo'; st.title = 'API disponible'; }
+      } else {
+        console.log('❌ TestAPI: API fallando. Resultado:', result);
+        if (badge) { badge.className = 'status-badge status-err'; badge.textContent = 'API: fallo'; badge.title = 'No se pudo contactar con el proxy/modelo'; }
+        // deshabilitar Tendencias y avisar
+        const tbtn = $('trendsBtn');
+        if (tbtn) { tbtn.disabled = true; tbtn.title = 'API no disponible'; }
+        const st = $('statusTrends');
+        if (st) { st.className = 'status-badge status-err'; st.textContent = 'API no disponible'; st.title = 'No es posible obtener tendencias'; }
+        const tr = $('trendsResults');
+        if (tr) { tr.innerHTML = '<div class="error-box"><strong>❌ API no disponible.</strong><br>Verifica el proxy local y la clave de API.</div>'; }
+      }
+    }
+
+    async function runAgent(e) {
+      e.preventDefault();
+      const goal = $('goal').value.trim();
+      const weeklyViewsStr = $('weeklyViews').value.trim();
+
+      let weeklyViews;
+      try {
+        // Permitir cualquier cantidad de números separados por comas
+        const numbers = weeklyViewsStr.split(',').map(n => n.trim()).filter(n => n);
+        if (numbers.length === 0) throw new Error('Formato inválido');
+        
+        weeklyViews = numbers.map(n => {
+          const num = parseFloat(n);
+          if (isNaN(num)) throw new Error('Formato inválido');
+          return num;
+        });
+      } catch {
+        $('agentResults').innerHTML = '<div class="error-box">Formato inválido para vistas. Usa formato: 1000,1200,800 (cualquier cantidad de números)</div>';
+        return;
+      }
+
+      const btn = $('agentBtn');
+      btn.disabled = true; btn.textContent = 'Generando con IA...';
+      $('agentResults').innerHTML = '<p>⏳ Analizando con la IA...</p>';
+
+      const prompt = `Eres un agente IA experto en marketing de redes sociales (TikTok, Instagram, Facebook). Analiza:
+- Objetivo de venta: ${goal}
+- Vistas semanales: ${weeklyViewsStr} (calcula promedio y detecta caídas si la última semana < promedio).
+Genera un reporte en español:
+1) Control de vistas (plataforma con más tráfico y fixes de caídas)
+2) Captación de clientes para ${goal}
+3) 3-5 ideas prácticas de contenido
+4) Presupuesto mensual realista (ads + herramientas)`;
+
+      const aiResponse = await callDeepSeek(prompt, 'agentResults');
+
+      const avg = weeklyViews.reduce((a,b)=>a+b,0)/weeklyViews.length;
+      const last = weeklyViews[weeklyViews.length-1];
+      const dropPercent = last < avg ? (((avg-last)/avg)*100).toFixed(2) : 0;
+      const dropHtml = dropPercent > 0
+        ? `<p style="color:var(--err);font-weight:700;">Caída detectada: ${dropPercent}% (promedio: ${avg.toFixed(0)})</p>`
+        : `<p style="color:var(--ok);font-weight:700;">¡Vistas estables o en aumento!</p>`;
+
+      if (aiResponse) {
+        $('agentResults').innerHTML = `<h3>Reporte del Agente IA para "${goal}"</h3>${dropHtml}<div class="ai-box">${aiResponse.replace(/\n/g,'<br>')}</div>`;
+      } else {
+        $('agentResults').innerHTML = `<h3>Reporte para "${goal}" (Fallback)</h3>${dropHtml}<div class="fallback">1) Promedio ~${avg.toFixed(0)} vistas. Priorizá TikTok si buscas alcance.<br>2) CTAs claros a WhatsApp/DM/landing.<br>3) Ideas: UGC, retos, antes/después, live semanal.<br>4) Presupuesto: USD 200–400/mes (ads ~150, tools ~50–100).</div>`;
+      }
+      btn.disabled = false; btn.textContent = 'Ejecutar Agente IA';
+
+      // Actualizar badge de estado del agente según caída
+      const s = $('statusAgent');
+      if (s) {
+        const drop = parseFloat(dropPercent);
+        s.className = 'status-badge ' + (drop <= 0 ? 'status-ok' : drop < 10 ? 'status-warn' : 'status-err');
+        s.textContent = drop <= 0 ? 'Estable' : drop < 10 ? 'Atención' : 'En riesgo';
+        s.title = drop <= 0 ? 'Criterio: sin caída vs. promedio' : drop < 10 ? 'Criterio: caída < 10% vs. promedio' : 'Criterio: caída ≥ 10% vs. promedio';
+      }
+    }
+
+    async function getTrends() {
+      const btn = $('trendsBtn');
+      const box = $('trendsResults');
+      btn.disabled = true; btn.textContent = 'Generando Tendencias con IA...';
+      box.innerHTML = '<p>⏳ Pidiendo tendencias a la IA...</p>';
+
+      // Obtener datos de la calculadora y control de vistas
+      const platform = $('platform')?.value || 'TikTok';
+      const views = $('views')?.value || '0';
+      const likes = $('likes')?.value || '0';
+      const followers = $('followers')?.value || '0';
+      const product = $('product')?.value || 'producto/servicio';
+      const goal = $('goal')?.value || 'ventas';
+      const weeklyViewsStr = $('weeklyViews')?.value || '';
+
+      // Calcular engagement rate
+      const viewsNum = parseFloat(views) || 0;
+      const likesNum = parseFloat(likes) || 0;
+      const engagementRate = viewsNum > 0 ? ((likesNum / viewsNum) * 100).toFixed(2) : 0;
+
+      // Procesar vistas semanales si existen
+      let weeklyTrend = '';
+      if (weeklyViewsStr) {
+        try {
+          const weeklyViews = weeklyViewsStr.split(',').map(n => parseFloat(n.trim())).filter(n => !isNaN(n));
+          if (weeklyViews.length > 0) {
+            const avg = weeklyViews.reduce((a, b) => a + b, 0) / weeklyViews.length;
+            const last = weeklyViews[weeklyViews.length - 1];
+            const trend = last > avg ? 'creciente' : last < avg ? 'decreciente' : 'estable';
+            weeklyTrend = `Tendencia semanal: ${trend} (promedio: ${avg.toFixed(0)}, última semana: ${last})`;
+          }
+        } catch (e) {
+          // Ignorar errores de parsing
+        }
+      }
+
+      const prompt = `Eres un analista de growth para redes sociales. Basándote en estos datos:
+
+PLATAFORMA: ${platform}
+MÉTRICAS ACTUALES:
+- Vistas: ${views}
+- Likes: ${likes}
+- Seguidores: ${followers}
+- Engagement Rate: ${engagementRate}%
+- Producto/Servicio: ${product}
+- Objetivo: ${goal}
+${weeklyTrend ? `- ${weeklyTrend}` : ''}
+
+Genera en español:
+1) 5 hashtags populares específicos para ${platform} relacionados con ${product}
+2) 3 tendencias actuales para vender más ${product} en ${platform}
+3) 3 ideas creativas aplicables hoy basadas en tu engagement rate (${engagementRate}%)
+4) 2 métricas clave a monitorear semanalmente
+
+Sé específico y accionable. Incluye hashtags reales y tendencias actuales.`;
+
+      const ai = await callDeepSeek(prompt, 'trendsResults');
+      if (ai) {
+        box.innerHTML = `<h3>🔥 Tendencias Personalizadas (IA)</h3><div class="ai-box">${ai.replace(/\n/g,'<br>')}</div>`;
+      } else {
+        box.innerHTML = `<div class="fallback"><strong>⚠️ Fallback:</strong><br>1) Short-form con ganchos 0–3s, 2) UGC con testimonios, 3) Live shopping semanal.<br>Ideas: retos con hashtag, cupones en stories, carrusel antes/después.<br>Métricas: CTR de stories, retención 3/5/10s.</div>`;
+      }
+      btn.disabled = false; btn.textContent = 'Obtener Tendencias con IA';
+    }
+
+    //<script>
+  // ===== Chat con el Agente =====
+  const SYSTEM_PROMPT = `Eres un asesor de growth y social selling para TikTok, Instagram y Facebook.
+Responde siempre en español, claro y accionable. Pide datos que falten y da ejemplos concretos.`;
+  let chatHistory = [{ role: 'system', content: SYSTEM_PROMPT }];
+
+  function renderChat() {
+    const log = $('chatLog');
+    log.innerHTML = '';
+    for (const m of chatHistory) {
+      if (m.role === 'system') continue;
+      const div = document.createElement('div');
+      div.className = 'msg ' + (m.role === 'user' ? 'user' : 'bot');
+      div.innerHTML = m.content.replace(/\n/g, '<br>');
+      log.appendChild(div);
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function callChat(messages) {
+    // Llama a tu proxy tal cual, pero enviando TODO el historial
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        max_tokens: 800,
+        temperature: 0.7,
+        stream: false
+      })
+    });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`HTTP ${res.status} :: ${text}`);
+    const data = JSON.parse(text);
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Respuesta sin contenido');
+    return content;
+  }
+
+  async function sendChat() {
+    const input = $('chatInput');
+    const btn = $('chatSend');
+    const text = input.value.trim();
+    if (!text) return;
+    chatHistory.push({ role: 'user', content: text });
+    input.value = '';
+    renderChat();
+
+    // estado "escribiendo…"
+    const typing = { role: 'assistant', content: '…' };
+    chatHistory.push(typing);
+    renderChat();
+    btn.disabled = true;
+
+    try {
+      const reply = await callChat(chatHistory);
+      // reemplaza el “…” por la respuesta real
+      typing.content = reply;
+      renderChat();
+    } catch (e) {
+      typing.content = `⚠️ Error: ${e.message}`;
+      renderChat();
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function resetChat() {
+    chatHistory = [{ role: 'system', content: SYSTEM_PROMPT }];
+    renderChat();
+  }
+     
+    window.addEventListener('DOMContentLoaded', () => {
+      // Hook de botones del hero
+      const upBtn = $('heroUploadBtn');
+      const clrBtn = $('heroClearBtn');
+      const upInput = $('heroUpload');
+      if (upBtn && upInput) {
+        upBtn.addEventListener('click', () => upInput.click());
+        upInput.addEventListener('change', (e) => handleHeroUpload(e.target.files?.[0]));
+      }
+      if (clrBtn) clrBtn.addEventListener('click', clearHeroImage);
+      loadHeroImageFromStorage();
+      // KPI selectors
+      $('kpiPlatform')?.addEventListener('change', loadStoredKpis);
+      $('kpiPeriod')?.addEventListener('change', loadStoredKpis);
+      const syncCompare = () => {
+        const per = $('kpiPeriod')?.value || 'week';
+        const m = $('cmpMetric')?.value || 'views';
+        const a = $('cmpPlatA')?.value || 'tiktok';
+        const b = $('cmpPlatB')?.value || 'instagram';
+        renderCompare(m, a, b, per);
+      };
+      $('cmpRender')?.addEventListener('click', syncCompare);
+      $('cmpPlatA')?.addEventListener('change', syncCompare);
+      $('cmpPlatB')?.addEventListener('change', syncCompare);
+      $('cmpMetric')?.addEventListener('change', syncCompare);
+      // re-render comparativa al cambiar periodo
+      $('kpiPeriod')?.addEventListener('change', syncCompare);
+      $('kpiExportCsv')?.addEventListener('click', () => {
+        const plat = $('kpiPlatform')?.value || 'tiktok';
+        const per = $('kpiPeriod')?.value || 'week';
+        exportKpiHistoryCsv(plat, per);
+      });
+      $('tipsAiBtn')?.addEventListener('click', () => expandTipsWithAI(false));
+      $('tipsAiReplaceBtn')?.addEventListener('click', () => expandTipsWithAI(true));
+      $('kpiClearHist')?.addEventListener('click', () => {
+        const plat = $('kpiPlatform')?.value || 'tiktok';
+        const per = $('kpiPeriod')?.value || 'week';
+        clearKpiHistory(plat, per);
+        loadStoredKpis();
+      });
+      $('kpiClearAll')?.addEventListener('click', () => {
+        clearAllKpiHistory();
+        loadStoredKpis();
+      });
+      $('kpiReset')?.addEventListener('click', () => {
+        const plat = $('kpiPlatform')?.value || 'tiktok';
+        const per = $('kpiPeriod')?.value || 'week';
+        try { localStorage.removeItem(`msocial.kpi.${plat}.${per}`); } catch {}
+        loadStoredKpis();
+      });
+      loadStoredKpis();
+      // comparativa inicial
+      (function(){
+        const per = $('kpiPeriod')?.value || 'week';
+        renderCompare('views', 'tiktok', 'instagram', per);
+      })();
+      $('metricsForm').addEventListener('submit', calculateMetrics);
+      $('agentForm').addEventListener('submit', runAgent);
+      $('trendsBtn').addEventListener('click', getTrends);
+      // Chequeo automático de API al cargar
+      testAPI();
+      setInterval(() => {
+        testAPI();
+      }, 30000);
+      $('chatSend').addEventListener('click', sendChat);
+      $('chatReset').addEventListener('click', resetChat);
+      $('chatInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChat();
+    }
+});
+renderChat(); // pinta el chat vacío al cargar
+
+    });
+  </script>
+</body>
+</html>
