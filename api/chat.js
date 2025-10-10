@@ -39,13 +39,25 @@ module.exports = async (req, res) => {
 
         const { 
             message, 
+            messages,
             model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
         } = body;
 
+        // Extraer el mensaje del usuario del array de messages si existe
+        let userMessage = message;
+        if (!userMessage && messages && Array.isArray(messages) && messages.length > 0) {
+            // Buscar el último mensaje del usuario
+            const lastUserMessage = messages.filter(msg => msg.role === 'user').pop();
+            if (lastUserMessage) {
+                userMessage = lastUserMessage.content;
+            }
+        }
+
         // Validar que el mensaje existe
-        if (!message) {
+        if (!userMessage) {
             console.log('ERROR: No message provided');
             console.log('Parsed body:', body);
+            console.log('Extracted userMessage:', userMessage);
             return res.status(400).json({ 
                 error: true, 
                 message: 'Mensaje es requerido.' 
@@ -71,7 +83,7 @@ module.exports = async (req, res) => {
             messages: [
                 {
                     role: "user",
-                    content: message,
+                    content: userMessage,
                 },
             ],
             model: model,
