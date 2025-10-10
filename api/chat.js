@@ -1,4 +1,4 @@
-// api/chat.js - Función serverless para Vercel
+// api/chat.js - Función serverless para Vercel (v2.0)
 const { Groq } = require('groq-sdk');
 
 module.exports = async (req, res) => {
