@@ -265,7 +265,7 @@
 
   <script>
     const MODEL = 'llama-3.3-70b-versatile';
-    const PROXY_URL = location.hostname.includes('localhost') //window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const PROXY_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                       ? 'http://localhost:3000/api/chat'
                       : '/api/chat'; // Usa ruta relativa para Vercel
     const $ = (id) => document.getElementById(id);
