@@ -2,6 +2,13 @@
 const { Groq } = require('groq-sdk');
 
 module.exports = async (req, res) => {
+    // Log para debugging
+    console.log('=== API CHAT DEBUG ===');
+    console.log('Method:', req.method);
+    console.log('Headers:', req.headers);
+    console.log('Body type:', typeof req.body);
+    console.log('Body:', req.body);
+    
     // Configurar CORS para Vercel
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -9,6 +16,7 @@ module.exports = async (req, res) => {
     
     // Manejar preflight requests
     if (req.method === 'OPTIONS') {
+        console.log('OPTIONS request handled');
         return res.status(200).end();
     }
 
@@ -36,6 +44,8 @@ module.exports = async (req, res) => {
 
         // Validar que el mensaje existe
         if (!message) {
+            console.log('ERROR: No message provided');
+            console.log('Parsed body:', body);
             return res.status(400).json({ 
                 error: true, 
                 message: 'Mensaje es requerido.' 
