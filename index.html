@@ -658,8 +658,9 @@ Da 5 recomendaciones accionables, concretas y de bajo costo para mejorar esa mé
         if (!response.ok) throw new Error(`Error API: ${response.status} - ${response.statusText} | ${responseText}`);
 
         const data = JSON.parse(responseText);
-        const content = data?.choices?.[0]?.message?.content;
-        if (!content) throw new Error('Respuesta inválida: falta choices[0].message.content');
+        // Manejar tanto el formato de Groq como el formato de nuestra función serverless
+        const content = data?.choices?.[0]?.message?.content || data?.reply;
+        if (!content) throw new Error('Respuesta inválida: falta contenido en la respuesta');
         return content;
       } catch (error) {
         console.error('❌ Error en callDeepSeek:', error);
