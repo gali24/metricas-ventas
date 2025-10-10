@@ -265,14 +265,10 @@
 
   <script>
     const MODEL = 'llama-3.3-70b-versatile';
-    const PROXY_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                      ? 'http://localhost:3000/api/chat'  // Para desarrollo local
-                      : '/api/chat'; // Para Vercel (producción)
+    const PROXY_URL = "/api/chat"; // Para Vercel
+    // Para desarrollo local, descomenta la línea de abajo y comenta la de arriba:
+    // const PROXY_URL = "http://localhost:3000/api/chat";
     const $ = (id) => document.getElementById(id);
-    //const MODEL = 'llama-3.3-70b-versatile';
-    //const PROXY_URL = 'http://localhost:3000/api/chat'
-    //? 'http://localhost:3000/api/chat'  // cuando usas tu server local
-    //: '/api/chat';
     
 
     function getTrafficRecommendation(platform, product, views) {
