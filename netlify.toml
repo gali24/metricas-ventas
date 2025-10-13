@@ -1,6 +1,6 @@
 [build]
   command = "echo 'No build step required'"
-  functions = "api"
+  functions = "functions"
   publish = "."
 
 [[redirects]]
