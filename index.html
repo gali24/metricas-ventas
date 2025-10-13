@@ -266,8 +266,8 @@
   <script>
     const MODEL = 'llama-3.3-70b-versatile';
     // const PROXY_URL = "/api/chat"; // Para Vercel
-    // Para desarrollo local, descomenta la línea de abajo y comenta la de arriba:
-    const PROXY_URL = "http://localhost:3000/api/chat";
+    // const PROXY_URL = "http://localhost:3000/api/chat"; // Para desarrollo local
+    const PROXY_URL = "/.netlify/functions/chat"; // Para Netlify
     const $ = (id) => document.getElementById(id);
     
 
