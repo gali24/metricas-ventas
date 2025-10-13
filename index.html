@@ -642,6 +642,9 @@ Da 5 recomendaciones accionables, concretas y de bajo costo para mejorar esa mé
 
     async function callDeepSeek(prompt, sectionId = null) {
       try {
+        console.log('=== FRONTEND DEBUG ===');
+        console.log('PROXY_URL:', PROXY_URL);
+        console.log('Sending request to:', PROXY_URL);
         const response = await fetch(PROXY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -653,11 +656,17 @@ Da 5 recomendaciones accionables, concretas y de bajo costo para mejorar esa mé
             stream: false
           })
         });
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('Error response:', errorText);
+          throw new Error(`Error API: ${response.status} - ${response.statusText} | ${errorText}`);
+        }
 
-        const responseText = await response.text();
-        if (!response.ok) throw new Error(`Error API: ${response.status} - ${response.statusText} | ${responseText}`);
-
-        const data = JSON.parse(responseText);
+        const data = await response.json();
+        console.log('Response data:', data);
         // Manejar tanto el formato de Groq como el formato de nuestra función serverless
         const content = data?.choices?.[0]?.message?.content || data?.reply;
         if (!content) throw new Error('Respuesta inválida: falta contenido en la respuesta');
