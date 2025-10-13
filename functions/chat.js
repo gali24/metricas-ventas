@@ -37,9 +37,12 @@ exports.handler = async (event, context) => {
 
         // Parsear el body
         const body = JSON.parse(event.body || '{}');
-        const { message, model = 'llama-3.3-70b-versatile' } = body;
+        const { message, messages, model = 'llama-3.3-70b-versatile' } = body;
 
-        if (!message) {
+        // Usar messages si está disponible, sino usar message
+        const messageToUse = messages || message;
+
+        if (!messageToUse) {
             return {
                 statusCode: 400,
                 headers,
@@ -54,12 +57,7 @@ exports.handler = async (event, context) => {
 
         // Generar respuesta
         const completion = await groq.chat.completions.create({
-            messages: [
-                {
-                    role: 'user',
-                    content: message,
-                },
-            ],
+            messages: messageToUse,
             model: model,
             temperature: 0.7,
             max_tokens: 1000,
