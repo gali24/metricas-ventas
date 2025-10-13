@@ -64,6 +64,10 @@ exports.handler = async (event, context) => {
         });
 
         const response = completion.choices[0]?.message?.content || 'No response generated';
+        
+        console.log('=== GROQ RESPONSE ===');
+        console.log('Completion:', JSON.stringify(completion, null, 2));
+        console.log('Response content:', response);
 
         return {
             statusCode: 200,

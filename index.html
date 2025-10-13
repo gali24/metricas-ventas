@@ -667,8 +667,11 @@ Da 5 recomendaciones accionables, concretas y de bajo costo para mejorar esa mé
 
         const data = await response.json();
         console.log('Response data:', data);
+        console.log('Response data type:', typeof data);
+        console.log('Response data keys:', Object.keys(data));
         // Manejar tanto el formato de Groq como el formato de nuestra función serverless
-        const content = data?.choices?.[0]?.message?.content || data?.reply;
+        const content = data?.choices?.[0]?.message?.content || data?.response || data?.reply;
+        console.log('Extracted content:', content);
         if (!content) throw new Error('Respuesta inválida: falta contenido en la respuesta');
         return content;
       } catch (error) {
