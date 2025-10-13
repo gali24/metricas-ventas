@@ -4,10 +4,7 @@
   "description": "Aplicación de métricas sociales con chat IA",
   "main": "server.js",
   "scripts": {
-    "dev": "node server.js",
-    "start": "node server.js",
-    "build": "echo 'No build step required'",
-    "vercel-build": "echo 'No build step required'"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["chat", "ai", "groq", "metrics"],
   "author": "",
@@ -15,10 +12,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^4.19.2",
-    "express-rate-limit": "^7.4.0",
-    "groq-sdk": "^0.7.0",
-    "helmet": "^7.1.0",
-    "morgan": "^1.10.0"
+    "express": "^5.1.0",
+    "groq-sdk": "^0.33.0"
   }
 }
