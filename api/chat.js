@@ -1,107 +1,77 @@
-// api/chat.js - Función serverless para Vercel (v2.0)
+// netlify/functions/chat.js - Función para Netlify
 const { Groq } = require('groq-sdk');
 
-module.exports = async (req, res) => {
-    // Log para debugging
-    console.log('=== API CHAT DEBUG ===');
-    console.log('Method:', req.method);
-    console.log('Headers:', req.headers);
-    console.log('Body type:', typeof req.body);
-    console.log('Body:', req.body);
-    
-    // Configurar CORS para Vercel
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    // Manejar preflight requests
-    if (req.method === 'OPTIONS') {
-        console.log('OPTIONS request handled');
-        return res.status(200).end();
-    }
+exports.handler = async (event, context) => {
+    // Configurar CORS
+    const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    };
 
-    // Solo permitir POST
-    if (req.method !== 'POST') {
-        return res.status(405).json({ 
-            error: true, 
-            message: 'Método no permitido. Solo POST.' 
-        });
+    // Manejar preflight requests
+    if (event.httpMethod === 'OPTIONS') {
+        return {
+            statusCode: 200,
+            headers,
+            body: '',
+        };
     }
 
     try {
-        // Parsear el body de la petición
-        let body;
-        if (typeof req.body === 'string') {
-            body = JSON.parse(req.body);
-        } else {
-            body = req.body;
+        // Verificar que sea POST
+        if (event.httpMethod !== 'POST') {
+            return {
+                statusCode: 405,
+                headers,
+                body: JSON.stringify({ error: 'Method not allowed' }),
+            };
         }
 
-        const { 
-            message, 
-            messages,
-            model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
-        } = body;
+        // Parsear el body
+        const body = JSON.parse(event.body || '{}');
+        const { message, model = 'llama-3.3-70b-versatile' } = body;
 
-        // Extraer el mensaje del usuario del array de messages si existe
-        let userMessage = message;
-        if (!userMessage && messages && Array.isArray(messages) && messages.length > 0) {
-            // Buscar el último mensaje del usuario
-            const lastUserMessage = messages.filter(msg => msg.role === 'user').pop();
-            if (lastUserMessage) {
-                userMessage = lastUserMessage.content;
-            }
+        if (!message) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Message is required' }),
+            };
         }
 
-        // Validar que el mensaje existe
-        if (!userMessage) {
-            console.log('ERROR: No message provided');
-            console.log('Parsed body:', body);
-            console.log('Extracted userMessage:', userMessage);
-            return res.status(400).json({ 
-                error: true, 
-                message: 'Mensaje es requerido.' 
-            });
-        }
-
-        // Verificar que la API key esté configurada
-        if (!process.env.GROQ_API_KEY) {
-            console.error("GROQ_API_KEY no está configurada en Vercel.");
-            return res.status(500).json({ 
-                error: true, 
-                message: 'API Key no configurada en el servidor.' 
-            });
-        }
-
-        // Configurar Groq con la API key
+        // Inicializar Groq
         const groq = new Groq({
             apiKey: process.env.GROQ_API_KEY,
         });
 
-        // Llamar a Groq API
-        const chatCompletion = await groq.chat.completions.create({
+        // Generar respuesta
+        const completion = await groq.chat.completions.create({
             messages: [
                 {
-                    role: "user",
-                    content: userMessage,
+                    role: 'user',
+                    content: message,
                 },
             ],
             model: model,
             temperature: 0.7,
-            max_tokens: 1024,
+            max_tokens: 1000,
         });
 
-        // Retornar respuesta exitosa
-        res.status(200).json({ 
-            reply: chatCompletion.choices[0]?.message?.content || "No se pudo generar una respuesta." 
-        });
+        const response = completion.choices[0]?.message?.content || 'No response generated';
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ response }),
+        };
 
     } catch (error) {
-        console.error('Error en api/chat.js:', error);
-        res.status(500).json({ 
-            error: true, 
-            message: 'Error al procesar la solicitud de chat.', 
-            details: error.message 
-        });
+        console.error('Error:', error);
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Internal server error' }),
+        };
     }
 };
