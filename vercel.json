@@ -10,5 +10,9 @@
       "destination": "/api/chat"
     }
   ],
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "buildCommand": "echo 'No build step required'",
+  "installCommand": "npm install",
+  "framework": null,
+  "nodeVersion": "18.x"
 }
