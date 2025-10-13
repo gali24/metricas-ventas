@@ -2,6 +2,13 @@
 const { Groq } = require('groq-sdk');
 
 exports.handler = async (event, context) => {
+    // Log para debugging
+    console.log('=== NETLIFY FUNCTION DEBUG ===');
+    console.log('GROQ_API_KEY exists:', !!process.env.GROQ_API_KEY);
+    console.log('GROQ_MODEL:', process.env.GROQ_MODEL);
+    console.log('Event method:', event.httpMethod);
+    console.log('Event body:', event.body);
+    
     // Configurar CORS
     const headers = {
         'Access-Control-Allow-Origin': '*',
